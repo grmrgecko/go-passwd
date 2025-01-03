@@ -176,3 +176,43 @@ func (a *SunMD5) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte
 	hash = a.Hash(password, salt, iterations)
 	return
 }
+
+// Hash an password using default parameters with Sun MD5.
+func HashSunMD5Password(password []byte) (hash []byte, err error) {
+	passwd := NewSunMD5Passwd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with Sun MD5.
+func HashSunMD5PasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewSunMD5Passwd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with Sun MD5.
+func SHashSunMD5Password(password string) (hash string, err error) {
+	passwd := NewSunMD5Passwd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with Sun MD5.
+func SHashSunMD5PasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewSunMD5Passwd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
+	return
+}

@@ -82,3 +82,43 @@ func (a *NTHash) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte
 	hash = a.Hash(password)
 	return
 }
+
+// Hash an password using default parameters with NT.
+func HashNTPassword(password []byte) (hash []byte, err error) {
+	passwd := NewNTPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with NT.
+func HashNTPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewNTPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with NT.
+func SHashNTPassword(password string) (hash string, err error) {
+	passwd := NewNTPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with NT.
+func SHashNTPasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewNTPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
+	return
+}

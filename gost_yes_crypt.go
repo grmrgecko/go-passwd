@@ -38,7 +38,7 @@ func (a *GostYesCrypt) SetSCryptParams(N, r int) (err error) {
 }
 
 // Decode SCrypt params.
-func (a *GostYesCrypt) DecodeSCriptParams() (N, r int) {
+func (a *GostYesCrypt) DecodeSCryptParams() (N, r int) {
 	b64 := []byte(a.Params)
 	if len(b64) != 3 {
 		return
@@ -77,5 +77,45 @@ func (a *GostYesCrypt) Hash(password []byte, salt []byte) (hash []byte, err erro
 // Override the passwd hash with salt function to hash with gost yes crypt.
 func (a *GostYesCrypt) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
 	hash, err = a.Hash(password, salt)
+	return
+}
+
+// Hash an password using default parameters with Gost Yes Crypt.
+func HashGostYesCryptPassword(password []byte) (hash []byte, err error) {
+	passwd := NewGostYesCryptPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with Gost Yes Crypt.
+func HashGostYesCryptPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewGostYesCryptPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with Gost Yes Crypt.
+func SHashGostYesCryptPassword(password string) (hash string, err error) {
+	passwd := NewGostYesCryptPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with Gost Yes Crypt.
+func SHashGostYesCryptPasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewGostYesCryptPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
 	return
 }

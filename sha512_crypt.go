@@ -139,3 +139,43 @@ func (a *SHA512Crypt) HashPasswordWithSalt(password []byte, salt []byte) (hash [
 	hash = a.Hash(password, salt, iterations)
 	return
 }
+
+// Hash an password using default parameters with SHA512.
+func HashSHA512Password(password []byte) (hash []byte, err error) {
+	passwd := NewSHA512CryptPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with SHA512.
+func HashSHA512PasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewSHA512CryptPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with SHA512.
+func SHashSHA512Password(password string) (hash string, err error) {
+	passwd := NewSHA512CryptPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with SHA512.
+func SHashSHA512PasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewSHA512CryptPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
+	return
+}

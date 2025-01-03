@@ -4,3 +4,5 @@ github.com/pedroalbanese/gogost v0.0.0-20240430171730-f95129c7a5af h1:8jbTN9e84F
 github.com/pedroalbanese/gogost v0.0.0-20240430171730-f95129c7a5af/go.mod h1:A4x4C7B6z2POO1x5CZzKXZVCOFPfjzxxVUbWl2Thhp0=
 golang.org/x/crypto v0.25.0 h1:ypSNr+bnYL2YhwoMt2zPxHFmbAN1KZs/njMG3hxUp30=
 golang.org/x/crypto v0.25.0/go.mod h1:T+wALwcMOSE0kXgUAnPAHqTLW+XHgcELELW8VaDgm/M=
+golang.org/x/crypto v0.31.0 h1:ihbySMvVjLAeSH1IbfcRTkD/iNscyz8rGzjF/E5hV6U=
+golang.org/x/crypto v0.31.0/go.mod h1:kDsLvtWBEx7MV9tJOj9bnXsPbxwJQ6csT/x4KIN4Ssk=

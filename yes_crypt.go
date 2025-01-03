@@ -36,7 +36,7 @@ func (a *YesCrypt) SetSCryptParams(N, r int) (err error) {
 }
 
 // Decode SCrypt params.
-func (a *YesCrypt) DecodeSCriptParams() (N, r int) {
+func (a *YesCrypt) DecodeSCryptParams() (N, r int) {
 	b64 := []byte(a.Params)
 	if len(b64) != 3 {
 		return
@@ -56,5 +56,45 @@ func (a *YesCrypt) Hash(password []byte, salt []byte) (hash []byte, err error) {
 // Override the passwd hash with salt function to hash with yes crypt.
 func (a *YesCrypt) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
 	hash, err = a.Hash(password, salt)
+	return
+}
+
+// Hash an password using default parameters with YesCrypt.
+func HashYesCryptPassword(password []byte) (hash []byte, err error) {
+	passwd := NewYesCryptPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with YesCrypt.
+func HashYesCryptPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewYesCryptPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with YesCrypt.
+func SHashYesCryptPassword(password string) (hash string, err error) {
+	passwd := NewYesCryptPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with YesCrypt.
+func SHashYesCryptPasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewYesCryptPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
 	return
 }

@@ -139,3 +139,43 @@ func (a *SHA256Crypt) HashPasswordWithSalt(password []byte, salt []byte) (hash [
 	hash = a.Hash(password, salt, iterations)
 	return
 }
+
+// Hash an password using default parameters with SHA256.
+func HashSHA256Password(password []byte) (hash []byte, err error) {
+	passwd := NewSHA256CryptPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with SHA256.
+func HashSHA256PasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewSHA256CryptPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with SHA256.
+func SHashSHA256Password(password string) (hash string, err error) {
+	passwd := NewSHA256CryptPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with SHA256.
+func SHashSHA256PasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewSHA256CryptPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
+	return
+}

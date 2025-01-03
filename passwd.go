@@ -33,6 +33,8 @@ type PasswdInterface interface {
 	GenerateSalt() ([]byte, error)
 	HashPassword(password []byte) (hash []byte, err error)
 	HashPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error)
+	SHashPassword(password string) (hash string, err error)
+	SHashPasswordWithSalt(password string, salt string) (hash string, err error)
 }
 
 // Base structure.
@@ -263,6 +265,22 @@ func CheckPassword(hash []byte, password []byte) (bool, error) {
 	return false, nil
 }
 
+// Check a password hash against a password string.
+func SCheckPassword(hash string, password string) (bool, error) {
+	passwd, err := NewPasswd(hash)
+	if err != nil {
+		return false, err
+	}
+	newHash, err := passwd.SHashPassword(password)
+	if err != nil {
+		return false, err
+	}
+	if hash == newHash {
+		return true, nil
+	}
+	return false, nil
+}
+
 // Used internally for salt generation.
 func generateRandomBytes(n uint) ([]byte, error) {
 	b := make([]byte, n)
@@ -321,5 +339,24 @@ func (a *Passwd) HashPassword(password []byte) (hash []byte, err error) {
 // Hash a password with a custom salt.
 func (a *Passwd) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
 	err = errors.New("hash algorithm is not implemented")
+	return
+}
+
+// Hash a password string.
+func (a *Passwd) SHashPassword(password string) (hash string, err error) {
+	hashb, err := a.HashPassword([]byte(password))
+	hash = string(hashb)
+	return
+}
+
+// Hash a password string with a custom salt.
+func (a *Passwd) SHashPasswordWithSalt(password string, salt string) (hash string, err error) {
+	var hashb []byte
+	if a.i != nil {
+		hashb, err = a.i.HashPasswordWithSalt([]byte(password), []byte(salt))
+	} else {
+		hashb, err = a.HashPasswordWithSalt([]byte(password), []byte(salt))
+	}
+	hash = string(hashb)
 	return
 }

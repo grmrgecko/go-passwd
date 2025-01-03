@@ -32,7 +32,7 @@ func (a *SCrypt) SetSCryptParams(N, r, p int) (err error) {
 }
 
 // Decode SCrypt params.
-func (a *SCrypt) DecodeSCriptParams() (N, r, p int) {
+func (a *SCrypt) DecodeSCryptParams() (N, r, p int) {
 	b64 := []byte(a.Params)
 	if len(b64) != 11 {
 		return
@@ -45,7 +45,7 @@ func (a *SCrypt) DecodeSCriptParams() (N, r, p int) {
 
 // Hash a password with salt using scrypt standard.
 func (a *SCrypt) Hash(password []byte, salt []byte) (hash []byte, err error) {
-	N, r, p := a.DecodeSCriptParams()
+	N, r, p := a.DecodeSCryptParams()
 	scryptHash, err := yescrypt.ScryptKey(password, salt, 1<<N, r, p, 32)
 
 	b64 := SCryptBase64Encode(scryptHash)
@@ -57,5 +57,45 @@ func (a *SCrypt) Hash(password []byte, salt []byte) (hash []byte, err error) {
 // Override the passwd hash with salt function to hash with scrypt.
 func (a *SCrypt) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
 	hash, err = a.Hash(password, salt)
+	return
+}
+
+// Hash an password using default parameters with SCrypt.
+func HashSCryptPassword(password []byte) (hash []byte, err error) {
+	passwd := NewSCryptPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with SCrypt.
+func HashSCryptPasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewSCryptPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with SCrypt.
+func SHashSCryptPassword(password string) (hash string, err error) {
+	passwd := NewSCryptPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with SCrypt.
+func SHashSCryptPasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewSCryptPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
 	return
 }

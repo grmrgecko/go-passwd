@@ -108,3 +108,43 @@ func (a *MD5Crypt) HashPasswordWithSalt(password []byte, salt []byte) (hash []by
 	hash = a.Hash(password, salt)
 	return
 }
+
+// Hash an password using default parameters with MD5.
+func HashMD5Password(password []byte) (hash []byte, err error) {
+	passwd := NewMD5CryptPasswd()
+	hash, err = passwd.HashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password with salt using default parameters with MD5.
+func HashMD5PasswordWithSalt(password []byte, salt []byte) (hash []byte, err error) {
+	passwd := NewMD5CryptPasswd()
+	hash, err = passwd.HashPasswordWithSalt(password, salt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string using default parameters with MD5.
+func SHashMD5Password(password string) (hash string, err error) {
+	passwd := NewMD5CryptPasswd()
+	hash, err = passwd.SHashPassword(password)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Hash an password string with salt using default parameters with MD5.
+func SHashMD5PasswordWithSalt(password string, salt string) (hash string, err error) {
+	passwd := NewMD5CryptPasswd()
+	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	if err != nil {
+		return
+	}
+	return
+}
