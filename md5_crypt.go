@@ -142,7 +142,7 @@ func SHashMD5Password(password string) (hash string, err error) {
 // Hash an password string with salt using default parameters with MD5.
 func SHashMD5PasswordWithSalt(password string, salt string) (hash string, err error) {
 	passwd := NewMD5CryptPasswd()
-	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	hash, err = passwd.SHashPasswordWithSalt(password, salt)
 	if err != nil {
 		return
 	}

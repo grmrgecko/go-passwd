@@ -113,7 +113,7 @@ func SHashGostYesCryptPassword(password string) (hash string, err error) {
 // Hash an password string with salt using default parameters with Gost Yes Crypt.
 func SHashGostYesCryptPasswordWithSalt(password string, salt string) (hash string, err error) {
 	passwd := NewGostYesCryptPasswd()
-	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	hash, err = passwd.SHashPasswordWithSalt(password, salt)
 	if err != nil {
 		return
 	}

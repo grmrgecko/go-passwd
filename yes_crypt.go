@@ -92,7 +92,7 @@ func SHashYesCryptPassword(password string) (hash string, err error) {
 // Hash an password string with salt using default parameters with YesCrypt.
 func SHashYesCryptPasswordWithSalt(password string, salt string) (hash string, err error) {
 	passwd := NewYesCryptPasswd()
-	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	hash, err = passwd.SHashPasswordWithSalt(password, salt)
 	if err != nil {
 		return
 	}

@@ -102,7 +102,7 @@ func SHashSHA1Password(password string) (hash string, err error) {
 // Hash an password string with salt using default parameters with SHA1.
 func SHashSHA1PasswordWithSalt(password string, salt string) (hash string, err error) {
 	passwd := NewSHA1Passwd()
-	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	hash, err = passwd.SHashPasswordWithSalt(password, salt)
 	if err != nil {
 		return
 	}

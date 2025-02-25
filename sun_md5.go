@@ -210,7 +210,7 @@ func SHashSunMD5Password(password string) (hash string, err error) {
 // Hash an password string with salt using default parameters with Sun MD5.
 func SHashSunMD5PasswordWithSalt(password string, salt string) (hash string, err error) {
 	passwd := NewSunMD5Passwd()
-	hash, err = passwd.SHashPasswordWithSalt(salt, salt)
+	hash, err = passwd.SHashPasswordWithSalt(password, salt)
 	if err != nil {
 		return
 	}
