@@ -52,7 +52,7 @@ func (a *SHA1Crypt) Hash(password []byte, salt []byte, iterations uint64) (hash 
 	}
 
 	// Create hash with result.
-	b64 := Base64Encode(buf)
+	b64 := SHA1Base64Encode(buf)
 	hash = []byte(fmt.Sprintf("%s%d$%s$", magic, iterations, salt))
 	hash = append(hash, b64...)
 	return

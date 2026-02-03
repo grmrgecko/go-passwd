@@ -1,6 +1,7 @@
 package passwd
 
 import (
+	"encoding/base64"
 	"errors"
 	"hash"
 )
@@ -34,8 +35,9 @@ func Base64Append(dst []byte, v uint, n int) []byte {
 	return dst
 }
 
-// Encode to crypt base64.
-func Base64Encode(src []byte) []byte {
+// Encode to crypt base64 with flawed logic that misses bytes.
+// This is used for SHA1 crypt algorithm.
+func SHA1Base64Encode(src []byte) []byte {
 	size := len(src)
 	var b64 []byte
 	var i int
@@ -53,6 +55,79 @@ func Base64Encode(src []byte) []byte {
 		b64 = Base64Append(b64, l, 4)
 	}
 	return b64
+}
+
+// Encode to crypt base64.
+func Base64Encode(src []byte) []byte {
+	size := len(src)
+	var b64 []byte
+	var i int
+	for i = 0; i <= size-3; i += 3 {
+		l := uint(src[i])<<16 |
+			uint(src[i+1])<<8 |
+			uint(src[i+2])
+		b64 = Base64Append(b64, l, 4)
+	}
+	remaining := size - i
+	if remaining == 2 {
+		l := uint(src[i])<<8 |
+			uint(src[i+1])
+		b64 = Base64Append(b64, l, 3)
+	} else if remaining == 1 {
+		l := uint(src[i])
+		b64 = Base64Append(b64, l, 2)
+	}
+	return b64
+}
+
+// Decode from crypt base64.
+func Base64Decode(src []byte) ([]byte, error) {
+	size := len(src)
+	if size == 0 {
+		return []byte{}, nil
+	}
+	if size%4 == 1 {
+		return nil, errors.New("invalid base64 length")
+	}
+
+	// Output buffer guessing.
+	// We can't know exact size easily due to the legacy 4->2 behavior vs 4->3,
+	// but (size/4)*3 is a safe lower bound, capacity can be larger.
+	dst := make([]byte, 0, (size/4)*3+3)
+	var i int
+	for i = 0; i < size-4; i += 4 {
+		var v uint
+		for j := 0; j < 4; j++ {
+			c := AToI64(src[i+j])
+			if c > 63 {
+				return nil, errors.New("invalid character in base64")
+			}
+			v |= uint(c) << (uint(j) * 6)
+		}
+		dst = append(dst, byte(v>>16), byte(v>>8), byte(v))
+	}
+	// Handle last block (can be partial)
+	remaining := size - i
+	var v uint
+	for j := 0; j < remaining; j++ {
+		c := AToI64(src[i+j])
+		if c > 63 {
+			return nil, errors.New("invalid character in base64")
+		}
+		v |= uint(c) << (uint(j) * 6)
+	}
+
+	if remaining == 4 {
+		// 4 chars -> 3 bytes
+		dst = append(dst, byte(v>>16), byte(v>>8), byte(v))
+	} else if remaining == 3 {
+		// 3 chars -> 2 bytes
+		dst = append(dst, byte(v>>8), byte(v))
+	} else if remaining == 2 {
+		// 2 chars -> 1 byte
+		dst = append(dst, byte(v))
+	}
+	return dst, nil
 }
 
 // Takes a prior hash, and recycles bytes until the length provided is covered.
@@ -207,6 +282,70 @@ func MD5Base64Encode(src []byte) []byte {
 	return b64
 }
 
+// Decode MD5 result from MD5 crypt base64.
+func MD5Base64Decode(src []byte) ([]byte, error) {
+	if len(src) != 22 {
+		return nil, errors.New("invalid MD5 base64 length")
+	}
+
+	dst := make([]byte, 16)
+	decode4 := func(b []byte) (uint, error) {
+		var v uint
+		for j := 0; j < 4; j++ {
+			c := AToI64(b[j])
+			if c > 63 {
+				return 0, errors.New("invalid character in base64")
+			}
+			v |= uint(c) << (uint(j) * 6)
+		}
+		return v, nil
+	}
+
+	var v uint
+	var err error
+
+	v, err = decode4(src[0:4])
+	if err != nil {
+		return nil, err
+	}
+	dst[12], dst[6], dst[0] = byte(v), byte(v>>8), byte(v>>16)
+
+	v, err = decode4(src[4:8])
+	if err != nil {
+		return nil, err
+	}
+	dst[13], dst[7], dst[1] = byte(v), byte(v>>8), byte(v>>16)
+
+	v, err = decode4(src[8:12])
+	if err != nil {
+		return nil, err
+	}
+	dst[14], dst[8], dst[2] = byte(v), byte(v>>8), byte(v>>16)
+
+	v, err = decode4(src[12:16])
+	if err != nil {
+		return nil, err
+	}
+	dst[15], dst[9], dst[3] = byte(v), byte(v>>8), byte(v>>16)
+
+	v, err = decode4(src[16:20])
+	if err != nil {
+		return nil, err
+	}
+	dst[5], dst[10], dst[4] = byte(v), byte(v>>8), byte(v>>16)
+
+	// Last 2 characters
+	c0 := AToI64(src[20])
+	c1 := AToI64(src[21])
+	if c0 > 63 || c1 > 63 {
+		return nil, errors.New("invalid character in base64")
+	}
+	v = uint(c0) | uint(c1)<<6
+	dst[11] = byte(v)
+
+	return dst, nil
+}
+
 // The crypt standard likes to rotate bits in base64,
 // although it doesn't really do anything for brute force protection.
 // This performs the rotation algorithm.
@@ -284,4 +423,116 @@ func Base64RotateEncode(src []byte, order bool) []byte {
 	}
 	// Return the base64.
 	return b64
+}
+
+// Decode from rotated base64.
+func Base64RotateDecode(src []byte, order bool) ([]byte, error) {
+	b64len := len(src)
+	var l int
+	if b64len%4 == 0 {
+		l = (b64len / 4) * 3
+	} else if b64len%4 == 3 {
+		l = (b64len/4)*3 + 2
+	} else if b64len%4 == 2 {
+		l = (b64len/4)*3 + 1
+	} else {
+		return nil, errors.New("invalid base64 length")
+	}
+
+	dst := make([]byte, l)
+	ia := 0
+	ib := l / 3
+	ic := ib + ib
+	id := 0
+	i := 0      // index in src (base64)
+	outIdx := 0 // index for original bytes loop (mimicking i in Encode)
+
+	// Process blocks of 4 -> 3
+	for ; outIdx < l-3; outIdx += 3 {
+		var v uint
+		for j := 0; j < 4; j++ {
+			c := AToI64(src[i+j])
+			if c > 63 {
+				return nil, errors.New("invalid character in base64")
+			}
+			v |= uint(c) << (uint(j) * 6)
+		}
+		i += 4
+
+		var a, b, c int
+		if order {
+			switch id % 3 {
+			case 0:
+				a, b, c = ia, ib, ic
+			case 1:
+				a, b, c = ib, ic, ia
+			case 2:
+				a, b, c = ic, ia, ib
+			}
+		} else {
+			switch id % 3 {
+			case 0:
+				a, b, c = ia, ib, ic
+			case 1:
+				a, b, c = ic, ia, ib
+			case 2:
+				a, b, c = ib, ic, ia
+			}
+		}
+		dst[a] = byte(v >> 16)
+		dst[b] = byte(v >> 8)
+		dst[c] = byte(v)
+		ia++
+		ib++
+		ic++
+		id++
+	}
+
+	// Process remainder
+	if l-outIdx == 2 {
+		var v uint
+		for j := 0; j < 3; j++ {
+			c := AToI64(src[i+j])
+			if c > 63 {
+				return nil, errors.New("invalid character in base64")
+			}
+			v |= uint(c) << (uint(j) * 6)
+		}
+		dst[l-1] = byte(v >> 8)
+		dst[l-2] = byte(v)
+	} else if l-outIdx == 1 {
+		var v uint
+		for j := 0; j < 2; j++ {
+			c := AToI64(src[i+j])
+			if c > 63 {
+				return nil, errors.New("invalid character in base64")
+			}
+			v |= uint(c) << (uint(j) * 6)
+		}
+		dst[l-1] = byte(v)
+	}
+	return dst, nil
+}
+
+// BCrypt specific alphabet.
+const bcryptAlphabet = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+var bcryptEncoding = base64.NewEncoding(bcryptAlphabet).WithPadding(base64.NoPadding)
+
+// Encode to bcrypt base64.
+func BCryptBase64Encode(src []byte) []byte {
+	n := bcryptEncoding.EncodedLen(len(src))
+	dst := make([]byte, n)
+	bcryptEncoding.Encode(dst, src)
+	return dst
+}
+
+// Decode from bcrypt base64.
+func BCryptBase64Decode(src []byte) ([]byte, error) {
+	dst := make([]byte, bcryptEncoding.DecodedLen(len(src)))
+	n, err := bcryptEncoding.Decode(dst, src)
+	if err != nil {
+		return nil, err
+	}
+	return dst[:n], nil
 }

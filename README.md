@@ -52,4 +52,3 @@ $ ./test
 ## Known issues
 
  - It is possible to generate password hashes that are incompatible with libxcrypt by setting a large round count. This may be mitigated in the future by adding an option to disable compatibility and otherwise require compatible parameters to be set.
- - The bcrypt hashing algorithms are not implemented yet, it may be implemented in the near futre.

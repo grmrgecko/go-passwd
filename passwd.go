@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -24,6 +25,8 @@ const (
 	S_CRYPT_MAGIC        = "$7$"
 	YES_CRYPT_MAGIC      = "$y$"
 	GOST_YES_CRYPT_MAGIC = "$gy$"
+	BCRYPT_MAGIC         = "$2"
+	BCRYPT_SALT_LENGTH   = 22
 )
 
 // Standard protocol for working with all hash algorithms.
@@ -245,6 +248,35 @@ func NewPasswd(settings string) (PasswdInterface, error) {
 		return passwd, nil
 	}
 
+	// BCrypt.
+	// $2[abxy]$[cost]$[salt][hash]
+	if strings.HasPrefix(settings, BCRYPT_MAGIC) {
+		passwd := NewBCryptPasswd()
+
+		// Magic prefix is trimmed to handle the rest of the string.
+		s := settings[len(BCRYPT_MAGIC):]
+
+		// The last dollar sign separates the parameters from the salt.
+		lastDollar := strings.LastIndex(s, "$")
+
+		if lastDollar == -1 {
+			return nil, errors.New("Invalid bcrypt hash format: missing separator")
+		}
+
+		// Parameters are everything before the last dollar sign.
+		passwd.SetParams(s[:lastDollar])
+
+		// Salt is the first BCRYPT_SALT_LENGTH bytes after the last dollar sign.
+		saltStart := lastDollar + 1
+		if len(s) < saltStart+BCRYPT_SALT_LENGTH {
+			return nil, errors.New("Invalid bcrypt hash format: salt too short")
+		}
+
+		passwd.SetSalt([]byte(s[saltStart : saltStart+BCRYPT_SALT_LENGTH]))
+
+		return passwd, nil
+	}
+
 	// End of the line.
 	return nil, errors.New("No valid matching algorithm")
 }
@@ -278,6 +310,7 @@ func SCheckPassword(hash string, password string) (bool, error) {
 	if hash == newHash {
 		return true, nil
 	}
+	log.Printf("Hash does not match: %s != %s", hash, newHash)
 	return false, nil
 }
 
