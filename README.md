@@ -5,12 +5,12 @@ This is a libxcrypt compatible password hashing library for the Go language. The
 ## Install
 
 ```
-go get github.com/GRMrGecko/go-passwd
+go get github.com/grmrgecko/go-passwd
 ```
 
 ## Docs
 
-[https://pkg.go.dev/github.com/GRMrGecko/go-passwd](https://pkg.go.dev/github.com/GRMrGecko/go-passwd)
+[https://pkg.go.dev/github.com/grmrgecko/go-passwd](https://pkg.go.dev/github.com/grmrgecko/go-passwd)
 
 ## Example
 
@@ -18,7 +18,7 @@ go get github.com/GRMrGecko/go-passwd
 package main
 
 import (
-	"github.com/GRMrGecko/go-passwd"
+	"github.com/grmrgecko/go-passwd"
 	"log"
 )
 
