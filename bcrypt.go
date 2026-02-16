@@ -88,9 +88,14 @@ func (a *BCrypt) Hash(password []byte, salt []byte) ([]byte, error) {
 				cStr := a.Params[idx+1:]
 				if c, cErr := strconv.ParseUint(cStr, 10, 32); cErr == nil {
 					cost = uint32(c)
+				} else {
+					return nil, cErr
 				}
 			}
 		}
+	}
+	if a.FollowStandards && (cost < 4 || cost > 31) {
+		return nil, fmt.Errorf("bcrypt cost must be between 4 and 31")
 	}
 
 	// Ensure salt is truncated to 22 bytes.
@@ -111,7 +116,7 @@ func (a *BCrypt) Hash(password []byte, salt []byte) ([]byte, error) {
 	case 'b', 'y':
 		// No bug, no safety hack needed (standard).
 	default:
-		// Unknown minor version defaults to standard (safe).
+		return nil, fmt.Errorf("unsupported bcrypt minor version %q", minor)
 	}
 
 	c, err := a.setupBlowfishCipher(password, cost, salt, bug, safety)

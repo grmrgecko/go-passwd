@@ -48,7 +48,3 @@ $ ./test
 2024/09/07 18:42:35 Password confirmed, saving new password.
 2024/09/07 18:42:35 The new password hash to save is: $6$4Eu/l5e.otcRj0rJ$YAlwxJD9pZY9.Z2TjseCbkXiUIrFU2AXh9DPEm5Z1SagxP..xaQCsz7jAgfW4nmUbLh.o23pEZGvvxPCLltf11
 ```
-
-## Known issues
-
- - It is possible to generate password hashes that are incompatible with libxcrypt by setting a large round count. This may be mitigated in the future by adding an option to disable compatibility and otherwise require compatible parameters to be set.

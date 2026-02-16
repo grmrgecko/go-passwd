@@ -170,6 +170,9 @@ func (a *SunMD5) HashPasswordWithSalt(password []byte, salt []byte) (hash []byte
 		if err != nil {
 			return
 		}
+		if a.FollowStandards && (iterations < 1 || iterations > 0xFFFFFFFF) {
+			return nil, fmt.Errorf("rounds must be between 1 and 4294967295")
+		}
 	}
 
 	// Compute hash.

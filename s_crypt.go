@@ -46,6 +46,20 @@ func (a *SCrypt) DecodeSCryptParams() (N, r, p int) {
 // Hash a password with salt using scrypt standard.
 func (a *SCrypt) Hash(password []byte, salt []byte) (hash []byte, err error) {
 	N, r, p := a.DecodeSCryptParams()
+	if r < 1 {
+		return nil, fmt.Errorf("scrypt r must be >= 1")
+	}
+	if p < 1 {
+		return nil, fmt.Errorf("scrypt p must be >= 1")
+	}
+	if a.FollowStandards {
+		if N < 2 || N > 63 {
+			return nil, fmt.Errorf("scrypt N must be between 2 and 63")
+		}
+		if r >= (1<<30) || p >= (1<<30) || uint64(r)*uint64(p) >= (1<<30) {
+			return nil, fmt.Errorf("scrypt requires r*p < 2^30")
+		}
+	}
 	scryptHash, err := yescrypt.ScryptKey(password, salt, 1<<N, r, p, 32)
 
 	b64 := SCryptBase64Encode(scryptHash)

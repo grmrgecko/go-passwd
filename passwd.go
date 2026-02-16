@@ -42,11 +42,13 @@ type PasswdInterface interface {
 
 // Base structure.
 type Passwd struct {
-	Magic      string
-	Params     string
-	SaltLength int
-	Salt       []byte
-	i          PasswdInterface
+	Magic  string
+	Params string
+	// When true, enforce libxcrypt-compatible parameter limits.
+	FollowStandards bool
+	SaltLength      int
+	Salt            []byte
+	i               PasswdInterface
 }
 
 // Get a password interface based on hash settings string.
@@ -328,6 +330,11 @@ func generateRandomBytes(n uint) ([]byte, error) {
 // Set parameters for password generation. Typically used for iterations, but also used for yes crypt configuration.
 func (a *Passwd) SetParams(p string) {
 	a.Params = p
+}
+
+// Enable or disable libxcrypt-compatible parameter checks.
+func (a *Passwd) SetFollowStandards(v bool) {
+	a.FollowStandards = v
 }
 
 // Set a salt for hashing, an empty salt will generate a new one.

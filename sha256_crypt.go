@@ -133,6 +133,9 @@ func (a *SHA256Crypt) HashPasswordWithSalt(password []byte, salt []byte) (hash [
 		if err != nil {
 			return
 		}
+		if a.FollowStandards && (iterations < 1000 || iterations > 999999999) {
+			return nil, fmt.Errorf("rounds must be between 1000 and 999999999")
+		}
 	}
 
 	// Compute hash.

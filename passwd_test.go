@@ -81,3 +81,42 @@ func TestNewPasswordGeneration(t *testing.T) {
 		})
 	}
 }
+
+func TestFollowStandards(t *testing.T) {
+	t.Run("DefaultIsDisabled", func(t *testing.T) {
+		p := NewSHA512CryptPasswd().(*SHA512Crypt)
+		p.SetParams("rounds=999")
+
+		hash, err := p.SHashPasswordWithSalt("Test", "salt")
+		require.NoError(t, err)
+		assert.Contains(t, hash, "$6$rounds=999$salt$")
+		assert.False(t, p.FollowStandards)
+	})
+
+	t.Run("SHA512RoundsRejected", func(t *testing.T) {
+		p := NewSHA512CryptPasswd().(*SHA512Crypt)
+		p.SetParams("rounds=999")
+		p.FollowStandards = true
+
+		_, err := p.SHashPasswordWithSalt("Test", "salt")
+		require.Error(t, err)
+	})
+
+	t.Run("BCryptCostRejected", func(t *testing.T) {
+		p := NewBCryptPasswd().(*BCrypt)
+		p.SetParams("b$03")
+		p.FollowStandards = true
+
+		_, err := p.SHashPasswordWithSalt("Test", "abcdefghijklmnopqrstuu")
+		require.Error(t, err)
+	})
+
+	t.Run("SCryptNRejected", func(t *testing.T) {
+		p := NewSCryptPasswd().(*SCrypt)
+		require.NoError(t, p.SetSCryptParams(1, 1, 1))
+		p.FollowStandards = true
+
+		_, err := p.SHashPasswordWithSalt("Test", "abcdefghijklmnopqrstuv")
+		require.Error(t, err)
+	})
+}
